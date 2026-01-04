@@ -7,14 +7,12 @@ services:
       - /mnt/pve/Disco4TB/data/immich:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
     environment:
-      # --- DATOS FIJOS (Hardcoded) ---
       - DB_HOSTNAME=immich_postgres
       - DB_USERNAME=postgres
       - DB_DATABASE_NAME=immich
       - REDIS_HOSTNAME=immich_redis
       - DB_PORT=5432
       - REDIS_PORT=6379
-      # --- VARIABLES SECRETAS (Desde Portainer) ---
       - DB_PASSWORD=${DB_PASSWORD}
     ports:
       - "2283:2283"
@@ -40,14 +38,12 @@ services:
       - /mnt/pve/Disco4TB/data/immich:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
     environment:
-      # --- DATOS FIJOS ---
       - DB_HOSTNAME=immich_postgres
       - DB_USERNAME=postgres
       - DB_DATABASE_NAME=immich
       - REDIS_HOSTNAME=immich_redis
       - DB_PORT=5432
       - REDIS_PORT=6379
-      # --- VARIABLES SECRETAS ---
       - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
       - immich-redis
@@ -69,19 +65,20 @@ services:
 
   immich-redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:e3b1794e8e16a20923b3c41429e9d9b44274d4402636a8e803c2763327d6d9e0
+    # CORREGIDO: Eliminado el @sha256...
+    image: redis:6.2-alpine
     restart: always
     networks:
       - proxy
 
   immich-postgres:
     container_name: immich_postgres
-    image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
+    # CORREGIDO: Eliminado el @sha256...
+    image: tensorchord/pgvecto-rs:pg14-v0.2.0
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: immich
       POSTGRES_INITDB_ARGS: '--data-checksums'
-      # Esta es la única que necesita leer de Portainer
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - immich_postgres_data:/var/lib/postgresql/data
