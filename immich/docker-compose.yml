@@ -7,6 +7,7 @@ services:
       - /mnt/pve/Disco4TB/data/immich:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
     environment:
+      # Usamos el nombre del SERVICIO, que es más seguro para DNS interno
       - DB_HOSTNAME=immich_postgres
       - DB_USERNAME=postgres
       - DB_DATABASE_NAME=immich
@@ -21,9 +22,8 @@ services:
       - immich-postgres
     restart: always
     networks:
-      - proxy
-    devices:
-      - /dev/dri:/dev/dri
+      - internal  # Para hablar con la base de datos
+      - proxy     # Para salir a internet vía Traefik
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.immich.entrypoints=web,websecure"
@@ -50,11 +50,9 @@ services:
       - immich-postgres
     restart: always
     networks:
-      - proxy
-    devices:
-      - /dev/dri:/dev/dri
+      - internal # Solo necesita red interna
 
-  # --- SECCIÓN DE MACHINE LEARNING DESACTIVADA TEMPORALMENTE ---
+  # Machine Learning DESACTIVADO por ahora
   # immich-machine-learning:
   #   container_name: immich_machine_learning
   #   image: ghcr.io/immich-app/immich-machine-learning:release
@@ -64,14 +62,14 @@ services:
   #     - IMMICH_MACHINE_LEARNING_ACCELERATORS=cpu
   #   restart: always
   #   networks:
-  #     - proxy
+  #     - internal
 
   immich-redis:
     container_name: immich_redis
     image: redis:6.2-alpine
     restart: always
     networks:
-      - proxy
+      - internal
 
   immich-postgres:
     container_name: immich_postgres
@@ -85,12 +83,14 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: always
     networks:
-      - proxy
+      - internal
 
 volumes:
   model-cache:
   postgres_data:
 
 networks:
-  proxy:
+  internal: # Red privada para ellos
+    driver: bridge
+  proxy:    # Red pública para Traefik
     external: true
