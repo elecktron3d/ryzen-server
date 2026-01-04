@@ -60,7 +60,7 @@ services:
     volumes:
       - model-cache:/cache
     environment:
-      # Forzamos uso de CPU para evitar el error de loop y conflictos de driver
+      # Arrancamos en CPU para garantizar estabilidad inicial
       - IMMICH_MACHINE_LEARNING_ACCELERATORS=cpu
     restart: always
     networks:
@@ -82,16 +82,15 @@ services:
       POSTGRES_INITDB_ARGS: '--data-checksums'
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - immich_postgres_data:/var/lib/postgresql/data
+      # Ya no usamos "external", dejamos que Docker cree uno nuevo y limpio
+      - postgres_data:/var/lib/postgresql/data
     restart: always
     networks:
       - proxy
 
 volumes:
   model-cache:
-  immich_postgres_data:
-    external: true
-    name: immich_immich_postgres_data
+  postgres_data: # Volumen nuevo y limpio
 
 networks:
   proxy:
