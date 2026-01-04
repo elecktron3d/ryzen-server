@@ -54,18 +54,17 @@ services:
     devices:
       - /dev/dri:/dev/dri
 
-  immich-machine-learning:
-    container_name: immich_machine_learning
-    image: ghcr.io/immich-app/immich-machine-learning:release
-    volumes:
-      - model-cache:/cache
-    environment:
-      # Forzamos CPU y limitamos workers para máxima estabilidad
-      - IMMICH_MACHINE_LEARNING_ACCELERATORS=cpu
-      - MACHINE_LEARNING_WORKERS=1
-    restart: always
-    networks:
-      - proxy
+  # --- SECCIÓN DE MACHINE LEARNING DESACTIVADA TEMPORALMENTE ---
+  # immich-machine-learning:
+  #   container_name: immich_machine_learning
+  #   image: ghcr.io/immich-app/immich-machine-learning:release
+  #   volumes:
+  #     - model-cache:/cache
+  #   environment:
+  #     - IMMICH_MACHINE_LEARNING_ACCELERATORS=cpu
+  #   restart: always
+  #   networks:
+  #     - proxy
 
   immich-redis:
     container_name: immich_redis
