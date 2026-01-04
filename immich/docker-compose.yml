@@ -54,23 +54,20 @@ services:
     devices:
       - /dev/dri:/dev/dri
 
- immich-machine-learning:
+  immich-machine-learning:
     container_name: immich_machine_learning
     image: ghcr.io/immich-app/immich-machine-learning:release
     volumes:
       - model-cache:/cache
     environment:
-      # Forzamos CPU para descartar conflictos de drivers totalmente
+      # Forzamos uso de CPU para evitar el error de loop y conflictos de driver
       - IMMICH_MACHINE_LEARNING_ACCELERATORS=cpu
     restart: always
     networks:
       - proxy
-    # devices:            <-- Asegúrate que esto siga comentado o borrado
-    #   - /dev/dri:/dev/dri
 
   immich-redis:
     container_name: immich_redis
-    # CORREGIDO: Eliminado el @sha256...
     image: redis:6.2-alpine
     restart: always
     networks:
@@ -78,7 +75,6 @@ services:
 
   immich-postgres:
     container_name: immich_postgres
-    # CORREGIDO: Eliminado el @sha256...
     image: tensorchord/pgvecto-rs:pg14-v0.2.0
     environment:
       POSTGRES_USER: postgres
