@@ -6,8 +6,15 @@ services:
     volumes:
       - /mnt/pve/Disco4TB/data/immich:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
+    # CORREGIDO: Usamos variables directas en lugar de archivo .env
+    environment:
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOSTNAME=${DB_HOSTNAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_DATABASE_NAME=${DB_DATABASE_NAME}
+      - REDIS_HOSTNAME=${REDIS_HOSTNAME}
+      - DB_PORT=5432
+      - REDIS_PORT=6379
     ports:
       - "2283:2283"
     depends_on:
@@ -17,7 +24,7 @@ services:
     networks:
       - proxy
     devices:
-      - /dev/dri:/dev/dri # Aceleración de hardware (detectada en tu inspect)
+      - /dev/dri:/dev/dri
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.immich.entrypoints=web,websecure"
@@ -27,13 +34,19 @@ services:
   immich-microservices:
     container_name: immich_microservices
     image: ghcr.io/immich-app/immich-server:release
-    # Este comando es lo único que cambia respecto al server
     command: [ "start.sh", "microservices" ]
     volumes:
       - /mnt/pve/Disco4TB/data/immich:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
+    # CORREGIDO: Variables explícitas aquí también
+    environment:
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOSTNAME=${DB_HOSTNAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_DATABASE_NAME=${DB_DATABASE_NAME}
+      - REDIS_HOSTNAME=${REDIS_HOSTNAME}
+      - DB_PORT=5432
+      - REDIS_PORT=6379
     depends_on:
       - immich-redis
       - immich-postgres
@@ -48,8 +61,7 @@ services:
     image: ghcr.io/immich-app/immich-machine-learning:release
     volumes:
       - model-cache:/cache
-    env_file:
-      - .env
+    # El ML no necesita claves de base de datos usualmente, pero si falla, se pueden agregar.
     restart: always
     networks:
       - proxy
@@ -66,11 +78,10 @@ services:
     image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_USER: postgres
-      POSTGRES_DB: immich
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
-      # Mapeamos a tu volumen existente para NO perder datos
       - immich_postgres_data:/var/lib/postgresql/data
     restart: always
     networks:
@@ -80,7 +91,6 @@ volumes:
   model-cache:
   immich_postgres_data:
     external: true
-    # IMPORTANTE: Aquí le decimos que use tu volumen viejo
     name: immich_immich_postgres_data
 
 networks:
