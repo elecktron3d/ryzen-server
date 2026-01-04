@@ -54,14 +54,19 @@ services:
     devices:
       - /dev/dri:/dev/dri
 
-  immich-machine-learning:
+ immich-machine-learning:
     container_name: immich_machine_learning
     image: ghcr.io/immich-app/immich-machine-learning:release
     volumes:
       - model-cache:/cache
+    environment:
+      # Forzamos CPU para descartar conflictos de drivers totalmente
+      - IMMICH_MACHINE_LEARNING_ACCELERATORS=cpu
     restart: always
     networks:
       - proxy
+    # devices:            <-- Asegúrate que esto siga comentado o borrado
+    #   - /dev/dri:/dev/dri
 
   immich-redis:
     container_name: immich_redis
