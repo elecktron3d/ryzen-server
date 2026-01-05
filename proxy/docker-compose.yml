@@ -1,23 +1,24 @@
 services:
   traefik:
     image: traefik:v3.0
-    user: "0:0"
     container_name: traefik
     restart: unless-stopped
-    #security_opt:
-      #- no-new-privileges:true
+    # ELIMINAMOS no-new-privileges y ponemos esto:
+    security_opt:
+      - apparmor:unconfined
+    # Forzamos ejecución como root
+    user: "0:0"
     networks:
       - proxy
     ports:
       - "80:80"
       - "443:443"
     environment:
-      # IMPORTANTE: Define CF_DNS_API_TOKEN en las variables de entorno de Portainer
       - CF_API_EMAIL=admin@vilcheztech.com
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      # Mantenemos tu ruta actual para no perder certificados
+      # QUITAMOS EL :ro DEL SOCKET PARA PROBAR
+      - /var/run/docker.sock:/var/run/docker.sock
       - /opt/docker/traefik/acme.json:/acme.json:rw
     command:
       - "--api.dashboard=true"
