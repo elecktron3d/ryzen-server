@@ -1,0 +1,22 @@
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    hostname: ryzen-server  # Identidad única para este servidor
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+      # IMPORTANTE: Descomenta la línea de abajo SOLO si tu red es 192.168.68.x
+      # y quieres usar este servidor como puente para entrar a otros equipos de tu casa.
+      # - TS_ROUTES=192.168.68.0/24 
+    volumes:
+      # Usamos tu ruta estándar para backups fáciles
+      - /opt/docker/tailscale/state:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+      - NET_RAW
+    restart: unless-stopped
+    network_mode: host
