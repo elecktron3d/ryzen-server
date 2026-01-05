@@ -1,0 +1,55 @@
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # IMPORTANTE: Define CF_DNS_API_TOKEN en las variables de entorno de Portainer
+      - CF_API_EMAIL=admin@vilcheztech.com
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Mantenemos tu ruta actual para no perder certificados
+      - /opt/docker/traefik/acme.json:/acme.json:rw
+    command:
+      - "--api.dashboard=true"
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.dnschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.myresolver.acme.email=admin@vilcheztech.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/acme.json"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`panel.vilcheztech.com`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$05$$MKcj5uIHQeEGDBAmObL8Ju4yUZAiEWMo0NN64SHH96mazlpIKEuKK"
+      - "traefik.http.routers.traefik.middlewares=auth"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    networks:
+      - proxy
+    environment:
+      # Recuerda definir esta variable en Portainer
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    command: tunnel run
+
+networks:
+  proxy:
+    name: proxy
+    external: true
