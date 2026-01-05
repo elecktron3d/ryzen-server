@@ -1,0 +1,66 @@
+services:
+  broker:
+    image: redis:7
+    container_name: paperless_redis
+    restart: unless-stopped
+    volumes:
+      - /opt/docker/paperless/redis:/data
+    networks:
+      - proxy
+
+  db:
+    image: postgres:16
+    container_name: paperless_db
+    restart: unless-stopped
+    volumes:
+      - paperless_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - proxy
+
+  webserver:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    container_name: paperless
+    restart: unless-stopped
+    depends_on:
+      - db
+      - broker
+    ports:
+      - "8000:8000"
+    volumes:
+      - /opt/docker/paperless/config:/usr/src/paperless/data
+      - /mnt/pve/Disco4TB/data/paperless/media:/usr/src/paperless/media
+      - /mnt/pve/Disco4TB/data/paperless/export:/usr/src/paperless/export
+      - /mnt/pve/Disco4TB/data/paperless/consume:/usr/src/paperless/consume
+    environment:
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBHOST: db
+      PAPERLESS_DBNAME: paperless
+      PAPERLESS_DBUSER: paperless
+      PAPERLESS_DBPASS: ${DB_PASSWORD}
+      PAPERLESS_URL: https://docs.vilcheztech.com
+      PAPERLESS_TIME_ZONE: America/Lima
+      PAPERLESS_OCR_LANGUAGE: spa
+      PAPERLESS_SECRET_KEY: ${SECRET_KEY}
+      PAPERLESS_ADMIN_USER: ${ADMIN_USER}
+      PAPERLESS_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.paperless.rule=Host(`docs.vilcheztech.com`)"
+      - "traefik.http.routers.paperless.entrypoints=web,websecure"
+      - "traefik.http.services.paperless.loadbalancer.server.port=8000"
+
+volumes:
+  paperless_db_data:
+    external: true
+    # TU VOLUMEN EXISTENTE:
+    name: paperless_paperless_db_data
+
+networks:
+  proxy:
+    external: true
