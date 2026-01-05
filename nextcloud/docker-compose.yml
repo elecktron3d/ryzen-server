@@ -1,0 +1,57 @@
+services:
+  nextcloud:
+    container_name: nextcloud
+    image: nextcloud:latest
+    restart: always
+    environment:
+      - MYSQL_HOST=nextcloud_db
+      - MYSQL_USER=elecktron
+      - MYSQL_PASSWORD=NEX3l3cktr0n
+      - MYSQL_DATABASE=elecktron
+      - NEXTCLOUD_TRUSTED_DOMAINS=drive.vilcheztech.com
+      - TRUSTED_PROXIES=172.18.0.0/16
+      - OVERWRITEHOST=drive.vilcheztech.com
+      - OVERWRITEPROTOCOL=https
+    volumes:
+      # Tus mapeos originales exactos:
+      - /opt/docker/nextcloud/config:/var/www/html
+      - /mnt/pve/Disco4TB/data/nextcloud:/var/www/html/data
+      # Integraciones que ya tenías configuradas:
+      - /mnt/pve/Disco4TB/data/immich:/mnt/immich_fotos:ro
+      - /mnt/pve/Disco4TB/data/paperless/consume:/mnt/paperless_inbox:rw
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextcloud.rule=Host(`drive.vilcheztech.com`)"
+      - "traefik.http.routers.nextcloud.entrypoints=web"
+      - "traefik.http.routers.nextcloud.middlewares=nextcloud-redirect"
+      - "traefik.http.middlewares.nextcloud-redirect.redirectregex.regex=/.well-known/(card|cal)dav"
+      - "traefik.http.middlewares.nextcloud-redirect.redirectregex.replacement=/remote.php/dav/"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+
+  nextcloud_db:
+    container_name: nextcloud_db
+    image: mariadb:10.6
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=NEX3l3cktr0n
+      - MYSQL_PASSWORD=NEX3l3cktr0n
+      - MYSQL_DATABASE=elecktron
+      - MYSQL_USER=elecktron
+      - MARIADB_AUTO_UPGRADE=1
+    volumes:
+      # Conectamos al volumen existente
+      - db_data:/var/lib/mysql
+    networks:
+      - proxy
+
+volumes:
+  db_data:
+    external: true
+    # Este es el nombre exacto que salió en tu reporte:
+    name: nextcloud_nextcloud_db_data
+
+networks:
+  proxy:
+    external: true
