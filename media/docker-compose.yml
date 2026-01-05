@@ -1,0 +1,125 @@
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    privileged: true
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=America/Lima
+      - DOCKER_MODS=linuxserver/mods:jellyfin-amd
+    volumes:
+      - /opt/docker/jellyfin:/config
+      - /mnt/pve/Disco4TB/data/media:/data/media
+    devices:
+      - /dev/dri:/dev/dri
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.vilcheztech.com`)"
+      - "traefik.http.routers.jellyfin.entrypoints=web"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=America/Lima
+    volumes:
+      - /opt/docker/sonarr:/config
+      - /mnt/pve/Disco4TB/data:/data
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.vilcheztech.com`)"
+      - "traefik.http.routers.sonarr.entrypoints=web,websecure"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=America/Lima
+    volumes:
+      - /opt/docker/radarr:/config
+      - /mnt/pve/Disco4TB/data:/data
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.vilcheztech.com`)"
+      - "traefik.http.routers.radarr.entrypoints=web,websecure"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=America/Lima
+    volumes:
+      - /opt/docker/prowlarr:/config
+      - /mnt/pve/Disco4TB/data:/data
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.vilcheztech.com`)"
+      - "traefik.http.routers.prowlarr.entrypoints=web,websecure"
+      - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=America/Lima
+      - WEBUI_PORT=8080
+    volumes:
+      - /opt/docker/qbittorrent:/config
+      - /mnt/pve/Disco4TB/data:/data
+    ports:
+      - "6881:6881"
+      - "6881:6881/udp"
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent.rule=Host(`qb.vilcheztech.com`)"
+      - "traefik.http.routers.qbittorrent.entrypoints=web,websecure"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=America/Lima
+    volumes:
+      - /opt/docker/jellyseerr:/app/config
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyseerr.rule=Host(`jellyseerr.vilcheztech.com`)"
+      - "traefik.http.routers.jellyseerr.entrypoints=web,websecure"
+      - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
+
+networks:
+  proxy:
+    external: true
