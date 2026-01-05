@@ -1,0 +1,17 @@
+services:
+  beszel_agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/host:ro
+      - /dev:/dev:ro
+    environment:
+      - BESZEL_SERVER_HOST=100.83.28.96:9005
+      - BESZEL_SERVER_PROTOCOL=http
+      - PORT=45876
+      - KEY=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIO0JfdOE5KN5BC2NeoJ2nF5h/uShnTYumZsKk61lMQC
+      - FILESYSTEM=/dev/vda2
