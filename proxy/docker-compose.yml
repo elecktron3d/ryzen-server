@@ -46,7 +46,7 @@ services:
       - proxy
     environment:
       # Recuerda definir esta variable en Portainer
-      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+      - TUNNEL_TOKEN=eyJhIjoiYjMyOGI4NDJhNzdlMzQ1Y2Y4YTFmYzIxMzZkMWRkMjEiLCJ0IjoiZDllNWM0YTMtNmMzMC00YzYwLTk2OGQtNzc2MDk5ZWY3MDYyIiwicyI6Ik9EaGlaVGs1WWpndE5tTXpNQzAwTmpSakxUaGhNalV0WW1SbU1qYzFZVFU0WmpOaSJ9
     command: tunnel run
 
 networks:
