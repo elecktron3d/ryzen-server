@@ -3,19 +3,21 @@ services:
     container_name: stirling-pdf
     image: stirlingtools/stirling-pdf:latest
     restart: unless-stopped
-    # user: root  <-- LO QUITAMOS, dejamos que el script interno gestione el usuario
+    # Forzamos ejecución como root para que no pida permiso al arrancar
+    user: root
     ports:
       - "8081:8080"
     volumes:
-      # Conectamos las carpetas que creamos en Termius
       - /opt/docker/stirling/configs:/configs
       - /opt/docker/stirling/logs:/logs
     environment:
       - DOCKER_ENABLE_SECURITY=false
-      - PUID=1000
-      - PGID=1000
-      - UMASK=022
       - INSTALL_BOOK_AND_ADVANCED_HTML_OPS=false
+      # Quitamos PUID/PGID para que no intente hacer cambios de usuario complejos que fallan
+    # --- AQUÍ ESTÁ LA MAGIA PARA PROXMOX ---
+    security_opt:
+      - apparmor:unconfined
+    # ---------------------------------------
     networks:
       - proxy
     labels:
