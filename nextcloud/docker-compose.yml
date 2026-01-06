@@ -1,54 +1,56 @@
 services:
-  nextcloud:
-    container_name: nextcloud
-    image: nextcloud:latest
-    restart: always
-    environment:
-      - MYSQL_HOST=nextcloud_db
-      - MYSQL_USER=elecktron
-      - MYSQL_PASSWORD=NEX3l3cktr0n
-      - MYSQL_DATABASE=elecktron
-      - NEXTCLOUD_TRUSTED_DOMAINS=drive.vilcheztech.com
-      - TRUSTED_PROXIES=172.18.0.0/16
-      - OVERWRITEHOST=drive.vilcheztech.com
-      - OVERWRITEPROTOCOL=https
+  nextcloud_db:
+    image: mariadb:10.6
+    container_name: nextcloud_db
+    restart: unless-stopped
+    # FIX: Desactivamos AIO nativo que falla en Proxmox/LXC
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-use-native-aio=0
+    # FIX: Permisos elevados para crear el socket
+    privileged: true
+    security_opt:
+      - apparmor:unconfined
     volumes:
-      # Tus mapeos originales exactos:
-      - /opt/docker/nextcloud/config:/var/www/html
-      - /mnt/pve/Disco4TB/data/nextcloud:/var/www/html/data
-      # Integraciones que ya tenías configuradas:
-      - /mnt/pve/Disco4TB/data/immich:/mnt/immich_fotos:ro
-      - /mnt/pve/Disco4TB/data/paperless/consume:/mnt/paperless_inbox:rw
+      - db_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
     networks:
-      - proxy
+      - default  # Solo red interna por seguridad
+
+  nextcloud:
+    image: lscr.io/linuxserver/nextcloud:latest
+    container_name: nextcloud
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Lima
+      - MYSQL_HOST=nextcloud_db
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - nextcloud_config:/config
+      - nextcloud_data:/data
+    networks:
+      - proxy   # Para hablar con Traefik
+      - default # Para hablar con la DB
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.rule=Host(`drive.vilcheztech.com`)"
       - "traefik.http.routers.nextcloud.entrypoints=web"
-      - "traefik.http.routers.nextcloud.middlewares=nextcloud-redirect"
-      - "traefik.http.middlewares.nextcloud-redirect.redirectregex.regex=/.well-known/(card|cal)dav"
-      - "traefik.http.middlewares.nextcloud-redirect.redirectregex.replacement=/remote.php/dav/"
-      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
-
-  nextcloud_db:
-    container_name: nextcloud_db
-    image: mariadb:10.6
-    restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=NEX3l3cktr0n
-      - MYSQL_PASSWORD=NEX3l3cktr0n
-      - MYSQL_DATABASE=elecktron
-      - MYSQL_USER=elecktron
-      - MARIADB_AUTO_UPGRADE=1
-    volumes:
-      # Conectamos al volumen existente
-      - db_data:/var/lib/mysql
-    networks:
-      - proxy
+      - "traefik.http.routers.nextcloud.rule=Host(`drive.vilcheztech.com`)"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=443"
+      - "traefik.http.routers.nextcloud.tls=true"
+      - "traefik.http.routers.nextcloud.service=nextcloud"
 
 volumes:
-  db_data:
+  nextcloud_config:
   nextcloud_data:
+  db_data:
 
 networks:
   proxy:
