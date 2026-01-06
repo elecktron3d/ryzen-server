@@ -31,6 +31,7 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
       - MYSQL_PASSWORD=${DB_PASSWORD}
+      # Ajustes para que Nextcloud sepa que es HTTPS aunque le llegue HTTP
       - OVERWRITEHOST=drive.vilcheztech.com
       - OVERWRITEPROTOCOL=https
       - TRUSTED_PROXIES=172.0.0.0/8
@@ -44,11 +45,11 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.nextcloud.entrypoints=web"
       - "traefik.http.routers.nextcloud.rule=Host(`drive.vilcheztech.com`)"
-      # VOLVEMOS AL 443 (El correcto para esta imagen)
+      # Puerto 443 del contenedor (Correcto)
       - "traefik.http.services.nextcloud.loadbalancer.server.port=443"
-      # AÑADIDO: Le decimos a Traefik que use HTTPS para hablar con el contenedor
+      # Protocolo HTTPS hacia el contenedor (Correcto)
       - "traefik.http.services.nextcloud.loadbalancer.server.scheme=https"
-      - "traefik.http.routers.nextcloud.tls=true"
+      # --- ELIMINADA LA LÍNEA 'tls=true' PARA QUE ACEPTE AL TÚNEL ---
       - "traefik.http.routers.nextcloud.service=nextcloud"
 
 volumes:
