@@ -3,6 +3,7 @@ services:
     image: mariadb:10.6
     container_name: nextcloud_db
     restart: unless-stopped
+    # Mantenemos los "superpoderes" para Proxmox
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-use-native-aio=0
     privileged: true
     security_opt:
@@ -18,26 +19,22 @@ services:
       - default
 
   nextcloud:
-    image: lscr.io/linuxserver/nextcloud:latest
+    image: nextcloud:latest
     container_name: nextcloud
     restart: unless-stopped
     security_opt:
       - apparmor:unconfined
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=America/Lima
       - MYSQL_HOST=nextcloud_db
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
       - MYSQL_PASSWORD=${DB_PASSWORD}
-      # Ajustes para que Nextcloud sepa que es HTTPS aunque le llegue HTTP
+      # Variables críticas para que el Proxy funcione bien
       - OVERWRITEHOST=drive.vilcheztech.com
       - OVERWRITEPROTOCOL=https
       - TRUSTED_PROXIES=172.0.0.0/8
     volumes:
-      - nextcloud_config:/config
-      - nextcloud_data:/data
+      - nextcloud_html:/var/www/html
     networks:
       - proxy
       - default
@@ -45,16 +42,12 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.nextcloud.entrypoints=web"
       - "traefik.http.routers.nextcloud.rule=Host(`drive.vilcheztech.com`)"
-      # Puerto 443 del contenedor (Correcto)
-      - "traefik.http.services.nextcloud.loadbalancer.server.port=443"
-      # Protocolo HTTPS hacia el contenedor (Correcto)
-      - "traefik.http.services.nextcloud.loadbalancer.server.scheme=https"
-      # --- ELIMINADA LA LÍNEA 'tls=true' PARA QUE ACEPTE AL TÚNEL ---
+      # Puerto 80: Simple, rápido y sin errores de SSL interno
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
       - "traefik.http.routers.nextcloud.service=nextcloud"
 
 volumes:
-  nextcloud_config:
-  nextcloud_data:
+  nextcloud_html:
   db_data:
 
 networks:
