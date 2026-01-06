@@ -3,7 +3,6 @@ services:
     image: mariadb:10.6
     container_name: nextcloud_db
     restart: unless-stopped
-    # Mantenemos los "superpoderes" para Proxmox
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-use-native-aio=0
     privileged: true
     security_opt:
@@ -29,7 +28,6 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
       - MYSQL_PASSWORD=${DB_PASSWORD}
-      # Variables críticas para que el Proxy funcione bien
       - OVERWRITEHOST=drive.vilcheztech.com
       - OVERWRITEPROTOCOL=https
       - TRUSTED_PROXIES=172.0.0.0/8
@@ -40,9 +38,11 @@ services:
       - default
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.entrypoints=web"
+      # DEFINIMOS AMBOS PUNTOS DE ENTRADA (HTTP y HTTPS)
+      - "traefik.http.routers.nextcloud.entrypoints=web,websecure"
       - "traefik.http.routers.nextcloud.rule=Host(`drive.vilcheztech.com`)"
-      # Puerto 80: Simple, rápido y sin errores de SSL interno
+      - "traefik.http.routers.nextcloud.tls=true"
+      # Apuntamos al puerto 80 del contenedor (El oficial usa 80)
       - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
       - "traefik.http.routers.nextcloud.service=nextcloud"
 
