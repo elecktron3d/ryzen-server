@@ -3,7 +3,6 @@ services:
     image: mariadb:10.6
     container_name: nextcloud_db
     restart: unless-stopped
-    # Mantenemos el parche que arregló la DB
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-use-native-aio=0
     privileged: true
     security_opt:
@@ -32,11 +31,9 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
       - MYSQL_PASSWORD=${DB_PASSWORD}
-      # --- VARIABLES NUEVAS PARA ARREGLAR EL PROXY ---
       - OVERWRITEHOST=drive.vilcheztech.com
       - OVERWRITEPROTOCOL=https
       - TRUSTED_PROXIES=172.0.0.0/8
-      # -----------------------------------------------
     volumes:
       - nextcloud_config:/config
       - nextcloud_data:/data
@@ -47,8 +44,10 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.nextcloud.entrypoints=web"
       - "traefik.http.routers.nextcloud.rule=Host(`drive.vilcheztech.com`)"
-      # CAMBIO CLAVE: Apuntamos al puerto 80 (HTTP) interno
-      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+      # VOLVEMOS AL 443 (El correcto para esta imagen)
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=443"
+      # AÑADIDO: Le decimos a Traefik que use HTTPS para hablar con el contenedor
+      - "traefik.http.services.nextcloud.loadbalancer.server.scheme=https"
       - "traefik.http.routers.nextcloud.tls=true"
       - "traefik.http.routers.nextcloud.service=nextcloud"
 
