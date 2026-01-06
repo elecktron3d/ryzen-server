@@ -48,9 +48,7 @@ services:
 
 volumes:
   db_data:
-    external: true
-    # Este es el nombre exacto que salió en tu reporte:
-    name: nextcloud_nextcloud_db_data
+  nextcloud_data:
 
 networks:
   proxy:
