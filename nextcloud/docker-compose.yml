@@ -15,7 +15,7 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
     networks:
-      - default
+      - proxy  # <--- MOVIDO A LA RED PÚBLICA PARA PRUEBAS
 
   nextcloud:
     image: nextcloud:latest
@@ -28,21 +28,17 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
       - MYSQL_PASSWORD=${DB_PASSWORD}
-      # ESTO ES CRUCIAL: Le dice a Nextcloud "Oye, aunque te hablen en HTTP, genera links HTTPS"
       - OVERWRITEHOST=drive.vilcheztech.com
       - OVERWRITEPROTOCOL=https
       - TRUSTED_PROXIES=172.0.0.0/8
     volumes:
       - nextcloud_html:/var/www/html
     networks:
-      - proxy
-      - default
+      - proxy # <--- AHORA AMBOS ESTÁN EN LA MISMA RED
     labels:
       - "traefik.enable=true"
-      # CAMBIO: Usamos 'web' (puerto 80 de Traefik) porque el túnel nos habla en HTTP
       - "traefik.http.routers.nextcloud.entrypoints=web"
       - "traefik.http.routers.nextcloud.rule=Host(`drive.vilcheztech.com`)"
-      # QUITAMOS 'tls=true'. Traefik aceptará la conexión tal cual viene del túnel.
       - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
       - "traefik.http.routers.nextcloud.service=nextcloud"
 
