@@ -1,5 +1,5 @@
 services:
- immich-server:
+  immich-server:
     container_name: immich_server
     image: ghcr.io/immich-app/immich-server:release
     command: [ "start.sh", "immich" ]
@@ -20,6 +20,9 @@ services:
       - immich-redis
       - immich-postgres
     restart: always
+    # --- ESTA ES LA LÍNEA QUE FALTABA PARA QUE FUNCIONE EN TU LXC ---
+    security_opt:
+      - apparmor:unconfined
     networks:
       - proxy
       - default
@@ -29,10 +32,6 @@ services:
       - "traefik.http.routers.immich.rule=Host(`fotos.vilcheztech.com`)"
       - "traefik.http.services.immich.loadbalancer.server.port=2283"
       - "traefik.http.routers.immich.service=immich"
-    # --- AQUÍ ESTÁ EL CAMBIO ---
-    security_opt:
-      - apparmor:unconfined
-      - seccomp:unconfined
 
   immich-machine-learning:
     container_name: immich_machine_learning
