@@ -1,29 +1,29 @@
 services:
   broker:
     image: redis:7
-    container_name: paperless_redis
     restart: unless-stopped
     volumes:
-      - /opt/docker/paperless/redis:/data
+      - redis_data:/data
     networks:
-      - proxy
+      - default
 
   db:
-    image: postgres:16
-    container_name: paperless_db
+    image: postgres:15
     restart: unless-stopped
     volumes:
-      - paperless_db_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: paperless
       POSTGRES_USER: paperless
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     networks:
-      - proxy
+      - default
+    # Parche crítico para Proxmox
+    security_opt:
+      - apparmor:unconfined
 
   webserver:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
-    container_name: paperless
     restart: unless-stopped
     depends_on:
       - db
@@ -31,35 +31,41 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - /opt/docker/paperless/config:/usr/src/paperless/data
-      - /mnt/pve/Disco4TB/data/paperless/media:/usr/src/paperless/media
-      - /mnt/pve/Disco4TB/data/paperless/export:/usr/src/paperless/export
-      - /mnt/pve/Disco4TB/data/paperless/consume:/usr/src/paperless/consume
+      - data:/usr/src/paperless/data
+      - media:/usr/src/paperless/media
+      - export:/usr/src/paperless/export
+      - /usr/src/paperless/consume:/usr/src/paperless/consume
     environment:
       PAPERLESS_REDIS: redis://broker:6379
       PAPERLESS_DBHOST: db
-      PAPERLESS_DBNAME: paperless
       PAPERLESS_DBUSER: paperless
       PAPERLESS_DBPASS: ${DB_PASSWORD}
+      PAPERLESS_SECRET_KEY: ${SECRET_KEY}
       PAPERLESS_URL: https://docs.vilcheztech.com
       PAPERLESS_TIME_ZONE: America/Lima
       PAPERLESS_OCR_LANGUAGE: spa
-      PAPERLESS_SECRET_KEY: ${SECRET_KEY}
-      PAPERLESS_ADMIN_USER: ${ADMIN_USER}
-      PAPERLESS_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      USERMAP_UID: 1000
+      USERMAP_GID: 1000
+    # Parche crítico para Proxmox
+    security_opt:
+      - apparmor:unconfined
     networks:
+      - default
       - proxy
     labels:
       - "traefik.enable=true"
+      # Entrada 'web' (puerto 80) para aceptar el tráfico del Túnel
+      - "traefik.http.routers.paperless.entrypoints=web"
       - "traefik.http.routers.paperless.rule=Host(`docs.vilcheztech.com`)"
-      - "traefik.http.routers.paperless.entrypoints=web,websecure"
       - "traefik.http.services.paperless.loadbalancer.server.port=8000"
+      - "traefik.http.routers.paperless.service=paperless"
 
 volumes:
-  paperless_db_data:
-    external: true
-    # TU VOLUMEN EXISTENTE:
-    name: paperless_paperless_db_data
+  data:
+  media:
+  export:
+  pg_data:
+  redis_data:
 
 networks:
   proxy:
