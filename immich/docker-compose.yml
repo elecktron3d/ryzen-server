@@ -13,15 +13,15 @@ services:
       - DB_DATABASE_NAME=immich
       - REDIS_HOSTNAME=immich_redis
       - IMMICH_MACHINE_LEARNING_URL=http://immich-machine-learning:3003
-      # CORRECCIÓN: Usamos el rango de Docker en lugar de 0.0.0.0/0
       - IMMICH_TRUSTED_PROXIES=172.0.0.0/8
+      # --- ESTA LÍNEA ES LA CLAVE PARA QUE TRAEFIK CONECTE ---
+      - HOST=0.0.0.0
     ports:
       - 2283:2283
     depends_on:
       - immich-redis
       - immich-postgres
     restart: always
-    # Parche de seguridad para tu LXC
     security_opt:
       - apparmor:unconfined
     networks:
