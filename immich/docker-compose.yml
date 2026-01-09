@@ -14,7 +14,6 @@ services:
       - REDIS_HOSTNAME=immich_redis
       - IMMICH_MACHINE_LEARNING_URL=http://immich-machine-learning:3003
       - IMMICH_TRUSTED_PROXIES=172.0.0.0/8
-      # --- ESTA LÍNEA ES LA CLAVE PARA QUE TRAEFIK CONECTE ---
       - HOST=0.0.0.0
     ports:
       - 2283:2283
@@ -33,7 +32,10 @@ services:
       - "traefik.http.routers.immich.rule=Host(`fotos.vilcheztech.com`)"
       - "traefik.http.services.immich.loadbalancer.server.port=2283"
       - "traefik.http.routers.immich.service=immich"
+      # --- ESTA ES LA BRÚJULA PARA TRAEFIK ---
+      - "traefik.docker.network=proxy"
 
+  # ... (El resto de servicios machine-learning, redis y postgres déjalos igual) ...
   immich-machine-learning:
     container_name: immich_machine_learning
     image: ghcr.io/immich-app/immich-machine-learning:release
