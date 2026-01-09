@@ -46,7 +46,10 @@ services:
       PAPERLESS_OCR_LANGUAGE: spa
       USERMAP_UID: 1000
       USERMAP_GID: 1000
-    # Parche crítico para Proxmox
+      # --- FIX ANTI-ERROR 504 ---
+      PAPERLESS_USE_X_FORWARDED_HOST: true
+      PAPERLESS_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
+      PAPERLESS_ALLOWED_HOSTS: "docs.vilcheztech.com,localhost"
     security_opt:
       - apparmor:unconfined
     networks:
@@ -54,7 +57,6 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      # Entrada 'web' (puerto 80) para aceptar el tráfico del Túnel
       - "traefik.http.routers.paperless.entrypoints=web"
       - "traefik.http.routers.paperless.rule=Host(`docs.vilcheztech.com`)"
       - "traefik.http.services.paperless.loadbalancer.server.port=8000"
