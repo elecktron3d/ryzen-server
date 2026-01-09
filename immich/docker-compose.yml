@@ -13,6 +13,8 @@ services:
       - DB_DATABASE_NAME=immich
       - REDIS_HOSTNAME=immich_redis
       - IMMICH_MACHINE_LEARNING_URL=http://immich-machine-learning:3003
+      # FIX: Confiar en el tráfico que viene de Traefik/Cloudflare
+      - IMMICH_TRUSTED_PROXIES=0.0.0.0/0
     ports:
       - 2283:2283
     depends_on:
@@ -24,9 +26,10 @@ services:
       - default
     labels:
       - "traefik.enable=true"
+      # Entrada web (puerto 80) porque el Túnel ya hizo el trabajo sucio de seguridad
       - "traefik.http.routers.immich.entrypoints=web"
-      # CAMBIO: Ahora apunta a fotos.vilcheztech.com
       - "traefik.http.routers.immich.rule=Host(`fotos.vilcheztech.com`)"
+      # --- ELIMINADA LA LÍNEA TLS=TRUE QUE CAUSABA EL 404 ---
       - "traefik.http.services.immich.loadbalancer.server.port=2283"
       - "traefik.http.routers.immich.service=immich"
 
