@@ -158,6 +158,8 @@ services:
     volumes:
       - jellyfin_config:/config
       - media_root:/data
+      # LÍNEA A AÑADIR: Mapea los 4TB para que Jellyfin pueda ver las carpetas
+      - /mnt/pve/Disco4TB:/data/disco4tb
     restart: unless-stopped
     security_opt:
       - apparmor:unconfined
