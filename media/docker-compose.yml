@@ -1,13 +1,14 @@
 services:
   # --- 1. EL CEREBRO DE SOLICITUDES (Jellyseerr) ---
-  jellyseerr:
-    image: fallenbagel/jellyseerr:latest
+ jellyseerr:
+    image: lscr.io/linuxserver/jellyseerr:latest
     container_name: jellyseerr
     environment:
-      - LOG_LEVEL=debug
+      - PUID=1000
+      - PGID=1000
       - TZ=America/Lima
     volumes:
-      - jellyseerr_config:/app/config
+      - jellyseerr_config:/config
     restart: unless-stopped
     security_opt:
       - apparmor:unconfined
