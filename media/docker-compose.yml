@@ -1,14 +1,13 @@
 services:
   # --- 1. EL CEREBRO DE SOLICITUDES (Versión LinuxServer) ---
   jellyseerr:
-    image: linuxserver/jellyseerr:latest
+    image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
     environment:
-      - PUID=1000
-      - PGID=1000
+      - LOG_LEVEL=debug
       - TZ=America/Lima
     volumes:
-      - jellyseerr_config:/config
+      - jellyseerr_config:/app/config
     restart: unless-stopped
     security_opt:
       - apparmor:unconfined
