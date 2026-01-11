@@ -1,7 +1,7 @@
 services:
   # --- 1. EL CEREBRO DE SOLICITUDES (Versión LinuxServer) ---
   jellyseerr:
-    image: lscr.io/linuxserver/jellyseerr:latest
+    image: linuxserver/jellyseerr:latest
     container_name: jellyseerr
     environment:
       - PUID=1000
