@@ -3,7 +3,15 @@ services:
     image: mariadb:10.6
     container_name: nextcloud_db
     restart: unless-stopped
-    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-use-native-aio=0 --skip-name-resolve --skip-host-cache
+    privileged: true
+    security_opt:
+      - apparmor:unconfined
+    command: 
+      - --transaction-isolation=READ-COMMITTED
+      - --binlog-format=ROW
+      - --innodb-use-native-aio=0
+      - --skip-name-resolve
+      - --socket=/var/lib/mysql/mysql.sock  # <--- FORZAMOS EL SOCKET AQUÍ
     volumes:
       - /data/nextcloud_db:/var/lib/mysql
     environment:
@@ -21,6 +29,7 @@ services:
     environment:
       - MYSQL_HOST=nextcloud_db
       - MYSQL_DATABASE=nextcloud
+      - MYSQL_PORT=/var/lib/mysql/mysql.sock
       - MYSQL_USER=nextcloud
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - OVERWRITEHOST=drive.vilcheztech.com
