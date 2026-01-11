@@ -175,7 +175,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_SCHEDULE=0 0 4 * * * # Ejecuta a las 4 AM
+      - WATCHTOWER_SCHEDULE=0 0 4 * * *
+    # --- FIX DE PERMISOS ---
+    privileged: true
     restart: unless-stopped
     networks:
       - proxy
@@ -183,7 +185,10 @@ services:
   glances:
     image: nicolargo/glances:latest
     container_name: glances
-    pid: host # Necesario para leer los procesos reales del host
+    # --- FIX DE PERMISOS ---
+    privileged: true
+    # pid: host es necesario, pero privileged asegura que lea el hardware
+    pid: host 
     environment:
       - GLANCES_OPT=-w
     volumes:
@@ -194,6 +199,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.glances.entrypoints=web"
+      # OJO: Asegúrate de usar el dominio que ya tenías en Cloudflare
       - "traefik.http.routers.glances.rule=Host(`monitor.vilcheztech.com`)"
       - "traefik.http.services.glances.loadbalancer.server.port=61208"
       - "traefik.docker.network=proxy"
