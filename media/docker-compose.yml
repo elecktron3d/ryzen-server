@@ -16,7 +16,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jellyseerr.entrypoints=web"
-      - "traefik.http.routers.jellyseerr.rule=Host(`pedidos.vilcheztech.com`)"
+      - "traefik.http.routers.jellyseerr.rule=Host(`pedir.vilcheztech.com`)"
       - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
       - "traefik.docker.network=proxy"
 
@@ -107,7 +107,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.qbit.entrypoints=web"
-      - "traefik.http.routers.qbit.rule=Host(`torrents.vilcheztech.com`)"
+      - "traefik.http.routers.qbit.rule=Host(`qb.vilcheztech.com`)"
       - "traefik.http.services.qbit.loadbalancer.server.port=8080"
       - "traefik.docker.network=proxy"
 
@@ -163,7 +163,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jellyfin.entrypoints=web"
-      - "traefik.http.routers.jellyfin.rule=Host(`tv.vilcheztech.com`)"
+      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.vilcheztech.com`)"
       - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
       - "traefik.docker.network=proxy"
 
