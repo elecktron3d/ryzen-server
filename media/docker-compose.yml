@@ -1,5 +1,5 @@
 services:
-  # --- 1. EL CEREBRO DE SOLICITUDES (Configuración Manual) ---
+  # --- 1. EL CEREBRO DE SOLICITUDES ---
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
@@ -7,21 +7,15 @@ services:
       - LOG_LEVEL=debug
       - TZ=America/Lima
     volumes:
-      # --- CAMBIO IMPORTANTE: Usamos la carpeta 777 del host ---
-      - /data/jellyseerr_config:/app/config
-      # ---------------------------------------------------------
+      - jellyseerr_config:/app/config
     restart: unless-stopped
-    security_opt:
-      - apparmor:unconfined
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.jellyseerr.entrypoints=web"
       - "traefik.http.routers.jellyseerr.rule=Host(`pedir.vilcheztech.com`)"
       - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
-      - "traefik.docker.network=proxy"
-      
+
   # --- 2. GESTORES DE BIBLIOTECA ---
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
@@ -30,20 +24,15 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=America/Lima
-   volumes:
-      - radarr_config:/config
-      - /mnt/pve/Disco4TB/media:/data # <--- RUTA DIRECTA AL DISCO DE 4TB
+    volumes:
+      - sonarr_config:/config
+      - /mnt/pve/Disco4TB/media:/data
     restart: unless-stopped
-    security_opt:
-      - apparmor:unconfined
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.sonarr.entrypoints=web"
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.vilcheztech.com`)"
-      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
-      - "traefik.docker.network=proxy"
 
   radarr:
     image: lscr.io/linuxserver/radarr:latest
@@ -54,18 +43,13 @@ services:
       - TZ=America/Lima
     volumes:
       - radarr_config:/config
-      - /mnt/pve/Disco4TB/media:/data # <--- RUTA DIRECTA AL DISCO DE 4TB
+      - /mnt/pve/Disco4TB/media:/data
     restart: unless-stopped
-    security_opt:
-      - apparmor:unconfined
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.radarr.entrypoints=web"
       - "traefik.http.routers.radarr.rule=Host(`radarr.vilcheztech.com`)"
-      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
-      - "traefik.docker.network=proxy"
 
   bazarr:
     image: lscr.io/linuxserver/bazarr:latest
@@ -75,19 +59,14 @@ services:
       - PGID=1000
       - TZ=America/Lima
     volumes:
-      - radarr_config:/config
-      - /mnt/pve/Disco4TB/media:/data # <--- RUTA DIRECTA AL DISCO DE 4TB
+      - bazarr_config:/config
+      - /mnt/pve/Disco4TB/media:/data
     restart: unless-stopped
-    security_opt:
-      - apparmor:unconfined
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.bazarr.entrypoints=web"
       - "traefik.http.routers.bazarr.rule=Host(`bazarr.vilcheztech.com`)"
-      - "traefik.http.services.bazarr.loadbalancer.server.port=6767"
-      - "traefik.docker.network=proxy"
 
   # --- 3. DESCARGAS E INDEXADORES ---
   qbittorrent:
@@ -99,19 +78,14 @@ services:
       - TZ=America/Lima
       - WEBUI_PORT=8080
     volumes:
-      - radarr_config:/config
-      - /mnt/pve/Disco4TB/media:/data # <--- RUTA DIRECTA AL DISCO DE 4TB
+      - qbit_config:/config
+      - /mnt/pve/Disco4TB/media:/data
     restart: unless-stopped
-    security_opt:
-      - apparmor:unconfined
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.qbit.entrypoints=web"
       - "traefik.http.routers.qbit.rule=Host(`qb.vilcheztech.com`)"
-      - "traefik.http.services.qbit.loadbalancer.server.port=8080"
-      - "traefik.docker.network=proxy"
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
@@ -123,26 +97,15 @@ services:
     volumes:
       - prowlarr_config:/config
     restart: unless-stopped
-    security_opt:
-      - apparmor:unconfined
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prowlarr.entrypoints=web"
       - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.vilcheztech.com`)"
-      - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
-      - "traefik.docker.network=proxy"
 
   flaresolverr:
     image: flaresolverr/flaresolverr:latest
     container_name: flaresolverr
-    environment:
-      - LOG_LEVEL=info
-      - TZ=America/Lima
-    privileged: true
-    security_opt:
-      - apparmor:unconfined
     restart: unless-stopped
     networks:
       - proxy
@@ -157,18 +120,13 @@ services:
       - TZ=America/Lima
     volumes:
       - jellyfin_config:/config
-      - /mnt/pve/Disco4TB/media:/data # <--- RUTA DIRECTA AL DISCO DE 4TB
+      - /mnt/pve/Disco4TB/media:/data
     restart: unless-stopped
-    security_opt:
-      - apparmor:unconfined
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.jellyfin.entrypoints=web"
       - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.vilcheztech.com`)"
-      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
-      - "traefik.docker.network=proxy"
 
   # --- 5. MANTENIMIENTO ---
   watchtower:
@@ -179,7 +137,6 @@ services:
     environment:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_SCHEDULE=0 0 4 * * *
-    privileged: true
     restart: unless-stopped
     networks:
       - proxy
@@ -188,7 +145,6 @@ services:
     image: nicolargo/glances:latest
     container_name: glances
     pid: host
-    privileged: true
     environment:
       - GLANCES_OPT=-w
     volumes:
@@ -198,13 +154,9 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.glances.entrypoints=web"
       - "traefik.http.routers.glances.rule=Host(`monitor.vilcheztech.com`)"
-      - "traefik.http.services.glances.loadbalancer.server.port=61208"
-      - "traefik.docker.network=proxy"
 
 volumes:
-  media_root:
   jellyfin_config:
   qbit_config:
   sonarr_config:
