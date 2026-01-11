@@ -15,7 +15,7 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
     networks:
-      - proxy  # <--- MOVIDO A LA RED PÚBLICA PARA PRUEBAS
+      - proxy
 
   nextcloud:
     image: nextcloud:latest
@@ -33,8 +33,10 @@ services:
       - TRUSTED_PROXIES=172.0.0.0/8
     volumes:
       - nextcloud_html:/var/www/html
+      # Aquí montamos el volumen compartido en la carpeta /data interna
+      - media_root:/data
     networks:
-      - proxy # <--- AHORA AMBOS ESTÁN EN LA MISMA RED
+      - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.nextcloud.entrypoints=web"
@@ -45,6 +47,12 @@ services:
 volumes:
   nextcloud_html:
   db_data:
+  # --- ESTO ES LO QUE FALTABA ---
+  media_root:
+    external: true
+    # IMPORTANTE: Esto asume que tu stack multimedia se llama "media".
+    # Si le pusiste otro nombre, cambia "media_media_root" por "nombrestack_media_root".
+    name: media_media_root
 
 networks:
   proxy:
