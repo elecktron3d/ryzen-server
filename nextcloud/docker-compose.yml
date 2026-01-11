@@ -31,11 +31,9 @@ services:
       - OVERWRITEHOST=drive.vilcheztech.com
       - OVERWRITEPROTOCOL=https
       - TRUSTED_PROXIES=172.0.0.0/8
-    volumes:
+   volumes:
       - nextcloud_html:/var/www/html
-      - media_root:/data
-      # LÍNEA A AÑADIR: Mapea los 4TB a la carpeta interna /disco4tb
-      - /mnt/pve/Disco4TB:/data/disco4tb
+      - /mnt/pve/Disco4TB:/data/disco_completo # <--- AQUÍ VE TODO EL DISCO DE 4TB
     networks:
       - proxy
     labels:
