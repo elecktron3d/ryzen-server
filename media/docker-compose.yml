@@ -138,6 +138,11 @@ services:
     environment:
       - LOG_LEVEL=info
       - TZ=America/Lima
+    # --- FIX CRÍTICO PARA PROXMOX LXC ---
+    security_opt:
+      - apparmor:unconfined
+    privileged: true
+    # ------------------------------------
     restart: unless-stopped
     networks:
       - proxy
