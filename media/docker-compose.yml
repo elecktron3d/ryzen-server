@@ -30,9 +30,9 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=America/Lima
-    volumes:
-      - sonarr_config:/config
-      - media_root:/data
+   volumes:
+      - radarr_config:/config
+      - /mnt/pve/Disco4TB/media:/data # <--- RUTA DIRECTA AL DISCO DE 4TB
     restart: unless-stopped
     security_opt:
       - apparmor:unconfined
@@ -54,7 +54,7 @@ services:
       - TZ=America/Lima
     volumes:
       - radarr_config:/config
-      - media_root:/data
+      - /mnt/pve/Disco4TB/media:/data # <--- RUTA DIRECTA AL DISCO DE 4TB
     restart: unless-stopped
     security_opt:
       - apparmor:unconfined
@@ -75,8 +75,8 @@ services:
       - PGID=1000
       - TZ=America/Lima
     volumes:
-      - bazarr_config:/config
-      - media_root:/data
+      - radarr_config:/config
+      - /mnt/pve/Disco4TB/media:/data # <--- RUTA DIRECTA AL DISCO DE 4TB
     restart: unless-stopped
     security_opt:
       - apparmor:unconfined
@@ -99,8 +99,8 @@ services:
       - TZ=America/Lima
       - WEBUI_PORT=8080
     volumes:
-      - qbit_config:/config
-      - media_root:/data
+      - radarr_config:/config
+      - /mnt/pve/Disco4TB/media:/data # <--- RUTA DIRECTA AL DISCO DE 4TB
     restart: unless-stopped
     security_opt:
       - apparmor:unconfined
@@ -157,9 +157,7 @@ services:
       - TZ=America/Lima
     volumes:
       - jellyfin_config:/config
-      - media_root:/data
-      # LÍNEA A AÑADIR: Mapea los 4TB para que Jellyfin pueda ver las carpetas
-      - /mnt/pve/Disco4TB:/data/disco4tb
+      - /mnt/pve/Disco4TB/media:/data # <--- RUTA DIRECTA AL DISCO DE 4TB
     restart: unless-stopped
     security_opt:
       - apparmor:unconfined
