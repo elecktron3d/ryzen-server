@@ -33,8 +33,9 @@ services:
       - TRUSTED_PROXIES=172.0.0.0/8
     volumes:
       - nextcloud_html:/var/www/html
-      # Aquí montamos el volumen compartido en la carpeta /data interna
       - media_root:/data
+      # LÍNEA A AÑADIR: Mapea los 4TB a la carpeta interna /disco4tb
+      - /mnt/pve/Disco4TB:/data/disco4tb
     networks:
       - proxy
     labels:
