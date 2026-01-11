@@ -1,6 +1,6 @@
 services:
-  # --- 1. EL CEREBRO DE SOLICITUDES (Jellyseerr) ---
- jellyseerr:
+  # --- 1. EL CEREBRO DE SOLICITUDES (Versión LinuxServer) ---
+  jellyseerr:
     image: lscr.io/linuxserver/jellyseerr:latest
     container_name: jellyseerr
     environment:
@@ -21,7 +21,7 @@ services:
       - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
       - "traefik.docker.network=proxy"
 
-  # --- 2. GESTORES DE BIBLIOTECA (Sonarr, Radarr, Bazarr) ---
+  # --- 2. GESTORES DE BIBLIOTECA ---
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
@@ -88,7 +88,7 @@ services:
       - "traefik.http.services.bazarr.loadbalancer.server.port=6767"
       - "traefik.docker.network=proxy"
 
-  # --- 3. DESCARGAS E INDEXADORES (Qbit, Prowlarr, FlareSolverr) ---
+  # --- 3. DESCARGAS E INDEXADORES ---
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
@@ -139,18 +139,14 @@ services:
     environment:
       - LOG_LEVEL=info
       - TZ=America/Lima
-    # --- FIX CRÍTICO PARA PROXMOX LXC ---
+    privileged: true
     security_opt:
       - apparmor:unconfined
-    privileged: true
-    # ------------------------------------
     restart: unless-stopped
     networks:
       - proxy
-    # No exponemos FlareSolverr a internet con labels de Traefik por seguridad.
-    # Prowlarr se conecta internamente via: http://flaresolverr:8191
 
-  # --- 4. REPRODUCTOR (Jellyfin) ---
+  # --- 4. REPRODUCTOR ---
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
@@ -173,7 +169,7 @@ services:
       - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
       - "traefik.docker.network=proxy"
 
-  # --- 5. MANTENIMIENTO Y MONITOREO LIGERO (Watchtower, Glances) ---
+  # --- 5. MANTENIMIENTO ---
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
@@ -182,7 +178,6 @@ services:
     environment:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_SCHEDULE=0 0 4 * * *
-    # --- FIX DE PERMISOS ---
     privileged: true
     restart: unless-stopped
     networks:
@@ -191,10 +186,8 @@ services:
   glances:
     image: nicolargo/glances:latest
     container_name: glances
-    # --- FIX DE PERMISOS ---
+    pid: host
     privileged: true
-    # pid: host es necesario, pero privileged asegura que lea el hardware
-    pid: host 
     environment:
       - GLANCES_OPT=-w
     volumes:
@@ -205,7 +198,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.glances.entrypoints=web"
-      # OJO: Asegúrate de usar el dominio que ya tenías en Cloudflare
       - "traefik.http.routers.glances.rule=Host(`monitor.vilcheztech.com`)"
       - "traefik.http.services.glances.loadbalancer.server.port=61208"
       - "traefik.docker.network=proxy"
