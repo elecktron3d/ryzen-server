@@ -3,6 +3,9 @@ services:
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
+    # --- LA LÍNEA MÁGICA ---
+    user: "root:root"
+    # -----------------------
     environment:
       - LOG_LEVEL=debug
       - TZ=America/Lima
