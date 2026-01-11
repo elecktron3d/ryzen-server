@@ -1,16 +1,15 @@
 services:
-  # --- 1. EL CEREBRO DE SOLICITUDES (Versión LinuxServer) ---
+  # --- 1. EL CEREBRO DE SOLICITUDES (Configuración Manual) ---
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
-    # --- LA LÍNEA MÁGICA ---
-    user: "root:root"
-    # -----------------------
     environment:
       - LOG_LEVEL=debug
       - TZ=America/Lima
     volumes:
-      - jellyseerr_config:/app/config
+      # --- CAMBIO IMPORTANTE: Usamos la carpeta 777 del host ---
+      - /data/jellyseerr_config:/app/config
+      # ---------------------------------------------------------
     restart: unless-stopped
     security_opt:
       - apparmor:unconfined
@@ -22,7 +21,7 @@ services:
       - "traefik.http.routers.jellyseerr.rule=Host(`pedir.vilcheztech.com`)"
       - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
       - "traefik.docker.network=proxy"
-
+      
   # --- 2. GESTORES DE BIBLIOTECA ---
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
