@@ -1,124 +1,212 @@
 services:
-  jellyfin:
-    image: lscr.io/linuxserver/jellyfin:latest
-    container_name: jellyfin
-    restart: unless-stopped
-    privileged: true
+  # --- 1. EL CEREBRO DE SOLICITUDES (Jellyseerr) ---
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
     environment:
-      - PUID=0
-      - PGID=0
+      - LOG_LEVEL=debug
       - TZ=America/Lima
-      - DOCKER_MODS=linuxserver/mods:jellyfin-amd
     volumes:
-      - /opt/docker/jellyfin:/config
-      - /mnt/pve/Disco4TB/data/media:/data/media
-    devices:
-      - /dev/dri:/dev/dri
+      - jellyseerr_config:/app/config
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.vilcheztech.com`)"
-      - "traefik.http.routers.jellyfin.entrypoints=web"
-      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+      - "traefik.http.routers.jellyseerr.entrypoints=web"
+      - "traefik.http.routers.jellyseerr.rule=Host(`pedidos.vilcheztech.com`)"
+      - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
+      - "traefik.docker.network=proxy"
 
+  # --- 2. GESTORES DE BIBLIOTECA (Sonarr, Radarr, Bazarr) ---
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
     environment:
-      - PUID=0
-      - PGID=0
+      - PUID=1000
+      - PGID=1000
       - TZ=America/Lima
     volumes:
-      - /opt/docker/sonarr:/config
-      - /mnt/pve/Disco4TB/data:/data
+      - sonarr_config:/config
+      - media_root:/data
     restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.entrypoints=web"
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.vilcheztech.com`)"
-      - "traefik.http.routers.sonarr.entrypoints=web,websecure"
       - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+      - "traefik.docker.network=proxy"
 
   radarr:
     image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
     environment:
-      - PUID=0
-      - PGID=0
+      - PUID=1000
+      - PGID=1000
       - TZ=America/Lima
     volumes:
-      - /opt/docker/radarr:/config
-      - /mnt/pve/Disco4TB/data:/data
+      - radarr_config:/config
+      - media_root:/data
     restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.radarr.entrypoints=web"
       - "traefik.http.routers.radarr.rule=Host(`radarr.vilcheztech.com`)"
-      - "traefik.http.routers.radarr.entrypoints=web,websecure"
       - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+      - "traefik.docker.network=proxy"
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Lima
+    volumes:
+      - bazarr_config:/config
+      - media_root:/data
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bazarr.entrypoints=web"
+      - "traefik.http.routers.bazarr.rule=Host(`bazarr.vilcheztech.com`)"
+      - "traefik.http.services.bazarr.loadbalancer.server.port=6767"
+      - "traefik.docker.network=proxy"
+
+  # --- 3. DESCARGAS E INDEXADORES (Qbit, Prowlarr, FlareSolverr) ---
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Lima
+      - WEBUI_PORT=8080
+    volumes:
+      - qbit_config:/config
+      - media_root:/data
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbit.entrypoints=web"
+      - "traefik.http.routers.qbit.rule=Host(`torrents.vilcheztech.com`)"
+      - "traefik.http.services.qbit.loadbalancer.server.port=8080"
+      - "traefik.docker.network=proxy"
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
     environment:
-      - PUID=0
-      - PGID=0
+      - PUID=1000
+      - PGID=1000
       - TZ=America/Lima
     volumes:
-      - /opt/docker/prowlarr:/config
-      - /mnt/pve/Disco4TB/data:/data
+      - prowlarr_config:/config
     restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.prowlarr.entrypoints=web"
       - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.vilcheztech.com`)"
-      - "traefik.http.routers.prowlarr.entrypoints=web,websecure"
       - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
+      - "traefik.docker.network=proxy"
 
-  qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent
+  flaresolverr:
+    image: flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
     environment:
-      - PUID=0
-      - PGID=0
+      - LOG_LEVEL=info
       - TZ=America/Lima
-      - WEBUI_PORT=8080
+    restart: unless-stopped
+    networks:
+      - proxy
+    # No exponemos FlareSolverr a internet con labels de Traefik por seguridad.
+    # Prowlarr se conecta internamente via: http://flaresolverr:8191
+
+  # --- 4. REPRODUCTOR (Jellyfin) ---
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Lima
     volumes:
-      - /opt/docker/qbittorrent:/config
-      - /mnt/pve/Disco4TB/data:/data
-    ports:
-      - "6881:6881"
-      - "6881:6881/udp"
+      - jellyfin_config:/config
+      - media_root:/data
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyfin.entrypoints=web"
+      - "traefik.http.routers.jellyfin.rule=Host(`tv.vilcheztech.com`)"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+      - "traefik.docker.network=proxy"
+
+  # --- 5. MANTENIMIENTO Y MONITOREO LIGERO (Watchtower, Glances) ---
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_SCHEDULE=0 0 4 * * * # Ejecuta a las 4 AM
+    restart: unless-stopped
+    networks:
+      - proxy
+
+  glances:
+    image: nicolargo/glances:latest
+    container_name: glances
+    pid: host # Necesario para leer los procesos reales del host
+    environment:
+      - GLANCES_OPT=-w
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.qbittorrent.rule=Host(`qb.vilcheztech.com`)"
-      - "traefik.http.routers.qbittorrent.entrypoints=web,websecure"
-      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+      - "traefik.http.routers.glances.entrypoints=web"
+      - "traefik.http.routers.glances.rule=Host(`monitor.vilcheztech.com`)"
+      - "traefik.http.services.glances.loadbalancer.server.port=61208"
+      - "traefik.docker.network=proxy"
 
-  jellyseerr:
-    image: fallenbagel/jellyseerr:latest
-    container_name: jellyseerr
-    environment:
-      - PUID=0
-      - PGID=0
-      - TZ=America/Lima
-    volumes:
-      - /opt/docker/jellyseerr:/app/config
-    restart: unless-stopped
-    networks:
-      - proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.jellyseerr.rule=Host(`jellyseerr.vilcheztech.com`)"
-      - "traefik.http.routers.jellyseerr.entrypoints=web,websecure"
-      - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
+volumes:
+  media_root:
+  jellyfin_config:
+  qbit_config:
+  sonarr_config:
+  radarr_config:
+  prowlarr_config:
+  bazarr_config:
+  jellyseerr_config:
 
 networks:
   proxy:
