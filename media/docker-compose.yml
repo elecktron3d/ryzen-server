@@ -143,7 +143,7 @@ services:
       - TZ=America/Lima
     volumes:
       - jellyfin_config:/config
-      - /mnt/pve/Disco4TB/media:/data
+      - /mnt/pve/Disco4TB:/data
     restart: unless-stopped
     networks:
       - proxy
