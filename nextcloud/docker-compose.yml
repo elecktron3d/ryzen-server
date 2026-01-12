@@ -38,6 +38,7 @@ services:
     volumes:
       - nextcloud_html:/var/www/html
       - /mnt/pve/Disco4TB:/data/disco4tb
+      - /mnt/videos_antiguos:/data/videos_antiguos
     networks:
       - proxy
     labels:
