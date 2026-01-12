@@ -1,8 +1,10 @@
 services:
-  # --- 1. EL CEREBRO DE SOLICITUDES ---
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
+    privileged: true
+    security_opt:
+      - apparmor:unconfined
     environment:
       - LOG_LEVEL=debug
       - TZ=America/Lima
@@ -16,10 +18,12 @@ services:
       - "traefik.http.routers.jellyseerr.rule=Host(`pedir.vilcheztech.com`)"
       - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
 
-  # --- 2. GESTORES DE BIBLIOTECA ---
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
+    privileged: true
+    security_opt:
+      - apparmor:unconfined
     environment:
       - PUID=1000
       - PGID=1000
@@ -37,6 +41,9 @@ services:
   radarr:
     image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
+    privileged: true
+    security_opt:
+      - apparmor:unconfined
     environment:
       - PUID=1000
       - PGID=1000
@@ -54,6 +61,9 @@ services:
   bazarr:
     image: lscr.io/linuxserver/bazarr:latest
     container_name: bazarr
+    privileged: true
+    security_opt:
+      - apparmor:unconfined
     environment:
       - PUID=1000
       - PGID=1000
@@ -68,10 +78,12 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.bazarr.rule=Host(`bazarr.vilcheztech.com`)"
 
-  # --- 3. DESCARGAS E INDEXADORES ---
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
+    privileged: true
+    security_opt:
+      - apparmor:unconfined
     environment:
       - PUID=1000
       - PGID=1000
@@ -90,6 +102,9 @@ services:
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
+    privileged: true
+    security_opt:
+      - apparmor:unconfined
     environment:
       - PUID=1000
       - PGID=1000
@@ -106,14 +121,19 @@ services:
   flaresolverr:
     image: flaresolverr/flaresolverr:latest
     container_name: flaresolverr
+    privileged: true # Prevención de bloqueos de red
+    security_opt:
+      - apparmor:unconfined
     restart: unless-stopped
     networks:
       - proxy
 
-  # --- 4. REPRODUCTOR ---
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
+    privileged: true
+    security_opt:
+      - apparmor:unconfined
     environment:
       - PUID=1000
       - PGID=1000
@@ -128,7 +148,6 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.vilcheztech.com`)"
 
-  # --- 5. MANTENIMIENTO ---
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
@@ -145,6 +164,7 @@ services:
     image: nicolargo/glances:latest
     container_name: glances
     pid: host
+    privileged: true
     environment:
       - GLANCES_OPT=-w
     volumes:
