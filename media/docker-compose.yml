@@ -98,6 +98,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.qbit.rule=Host(`qb.vilcheztech.com`)"
+      - "traefik.http.services.qbit.loadbalancer.server.port=8080"
+      - "traefik.docker.network=proxy"
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
