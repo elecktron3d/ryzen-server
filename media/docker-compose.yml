@@ -9,7 +9,7 @@ services:
       - LOG_LEVEL=debug
       - TZ=America/Lima
     volumes:
-      - jellyseerr_config:/app/config
+      - /data/jellyseerr_config:/app/config
     restart: unless-stopped
     networks:
       - proxy
