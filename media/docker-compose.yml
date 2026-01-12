@@ -141,13 +141,13 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=America/Lima
-      - LIBVA_DRIVER_NAME=radeonsi  # <--- FUERZA EL DRIVER DE AMD
+      - LIBVA_DRIVER_NAME=radeonsi
     volumes:
       - jellyfin_config:/config
       - /mnt/pve/Disco4TB:/data
     group_add:
-      - "44"        # Grupo Video
-      - "104"       # <--- SUSTITUYE POR EL NÚMERO QUE TE SALIÓ EN EL PASO 1 (Render)
+      - "44"
+      - "104"
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
       - /dev/dri/card0:/dev/dri/card0
@@ -157,6 +157,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.vilcheztech.com`)"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
 
   watchtower:
     image: containrrr/watchtower
