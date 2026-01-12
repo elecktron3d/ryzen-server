@@ -144,10 +144,8 @@ services:
     volumes:
       - jellyfin_config:/config
       - /mnt/pve/Disco4TB:/data
-    user: 1000:1000
     group_add:
       - "44"        # <--- Agrega este ID que encontramos (video)
-      - "104"       # (Opcional) A veces el grupo render es el 104, no estorba ponerlo
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
       - /dev/dri/card0:/dev/dri/card0
