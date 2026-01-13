@@ -39,6 +39,7 @@ services:
       - nextcloud_html:/var/www/html
       - /mnt/pve/Disco4TB:/data/disco4tb
       - /mnt/videos_antiguos:/data/videos_antiguos
+      - /mnt/onedrive:/data/onedrive:shared
     networks:
       - proxy
     labels:
