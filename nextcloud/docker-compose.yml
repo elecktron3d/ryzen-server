@@ -40,6 +40,8 @@ services:
       - /mnt/pve/Disco4TB:/data/disco4tb
       - /mnt/videos_antiguos:/data/videos_antiguos
       - /mnt/onedrive:/data/onedrive:shared
+      - /mnt/gopro_21_23:/data/gopro_21_23
+      - /mnt/gopro_24_25_dji:/data/gopro_24_25_dji
     networks:
       - proxy
     labels:
