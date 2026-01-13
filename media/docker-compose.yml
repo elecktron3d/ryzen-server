@@ -145,6 +145,8 @@ services:
     volumes:
       - jellyfin_config:/config
       - /mnt/pve/Disco4TB:/data
+      - /mnt/gopro_21_23:/media/gopro_21_23
+      - /mnt/gopro_24_25_dji:/media/gopro_24_25_dji
     group_add:
       - "44"
       - "993"
