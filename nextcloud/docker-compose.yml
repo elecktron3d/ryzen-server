@@ -58,14 +58,22 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.entrypoints=web" # <--- Vuelve a tu original
+      - "traefik.http.routers.nextcloud.entrypoints=web"
       - "traefik.http.routers.nextcloud.rule=Host(`drive.vilcheztech.com`)"
       - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
-      - "traefik.http.routers.nextcloud.middlewares=nextcloud-hsts"
+      
+      # UNIÓN DE MIDDLEWARES (HSTS + REDIR)
+      - "traefik.http.routers.nextcloud.middlewares=nextcloud-hsts,nextcloud-redir"
+      
+      # CONFIGURACIÓN HSTS
       - "traefik.http.middlewares.nextcloud-hsts.headers.stsSeconds=15552000"
       - "traefik.http.middlewares.nextcloud-hsts.headers.stsIncludeSubdomains=true"
       - "traefik.http.middlewares.nextcloud-hsts.headers.stsPreload=true"
-
+      - "traefik.http.middlewares.nextcloud-hsts.headers.forceSTSHeader=true"
+      
+      # CONFIGURACIÓN REDIRECCIONES CALDAV/CARDDAV
+      - "traefik.http.middlewares.nextcloud-redir.redirectregex.regex=^https://(.*)/.well-known/(card|cal)dav"
+      - "traefik.http.middlewares.nextcloud-redir.redirectregex.replacement=https://$$1/remote.php/dav/"
 volumes:
   nextcloud_html:
 networks:
