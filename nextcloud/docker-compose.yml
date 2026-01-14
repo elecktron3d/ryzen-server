@@ -57,9 +57,8 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.entrypoints=websecure"
+      - "traefik.http.routers.nextcloud.entrypoints=web"
       - "traefik.http.routers.nextcloud.rule=Host(`drive.vilcheztech.com`)"
-      - "traefik.http.routers.nextcloud.tls=true"
       - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
       
       # UNIÓN DE MIDDLEWARES (HSTS + REDIR)
