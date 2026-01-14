@@ -3,11 +3,13 @@ services:
     image: mariadb:10.6
     container_name: nextcloud_db
     restart: unless-stopped
+    # ELIMINAMOS 'privileged: true' y 'security_opt' (no deberían ser necesarios)
     command: 
       - --transaction-isolation=READ-COMMITTED
       - --binlog-format=ROW
       - --innodb-use-native-aio=0
       - --skip-name-resolve
+      # ELIMINAMOS la línea del --socket
     volumes:
       - /data/nextcloud_db:/var/lib/mysql
     environment:
@@ -39,6 +41,7 @@ services:
       - MYSQL_USER=nextcloud
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - REDIS_HOST=nextcloud_redis # <--- Conexión a Redis
+      - MYSQL_PORT=3306
       - OVERWRITEHOST=drive.vilcheztech.com
       - OVERWRITEPROTOCOL=https
       - TRUSTED_PROXIES=172.0.0.0/8
