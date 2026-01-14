@@ -6,6 +6,10 @@ services:
     volumes:
       - /mnt/pve/Disco4TB/immich_app_data:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
+      - /mnt/pve/Disco4TB/media:/mnt/media:ro
+      - /mnt/pve/Disco4TB/personal:/mnt/personal:ro
+      - /mnt/gopro_21_23:/data/gopro_21_23
+      - /mnt/gopro_24_25_dji:/data/gopro_24_25_dji
     environment:
       - DB_HOSTNAME=immich_postgres
       - DB_USERNAME=postgres
