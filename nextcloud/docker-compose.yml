@@ -3,15 +3,11 @@ services:
     image: mariadb:10.6
     container_name: nextcloud_db
     restart: unless-stopped
-    privileged: true
-    security_opt:
-      - apparmor:unconfined
     command: 
       - --transaction-isolation=READ-COMMITTED
       - --binlog-format=ROW
       - --innodb-use-native-aio=0
       - --skip-name-resolve
-      - --socket=/var/lib/mysql/mysql.sock  # <--- FORZAMOS EL SOCKET AQUÍ
     volumes:
       - /data/nextcloud_db:/var/lib/mysql
     environment:
@@ -22,16 +18,27 @@ services:
     networks:
       - proxy
 
+  # --- NUEVO SERVICIO REDIS ---
+  nextcloud_redis:
+    image: redis:alpine
+    container_name: nextcloud_redis
+    restart: unless-stopped
+    networks:
+      - proxy
+
   nextcloud:
     image: nextcloud:latest
     container_name: nextcloud
     restart: unless-stopped
+    depends_on:
+      - nextcloud_db
+      - nextcloud_redis
     environment:
       - MYSQL_HOST=nextcloud_db
       - MYSQL_DATABASE=nextcloud
-      - MYSQL_PORT=/var/lib/mysql/mysql.sock
       - MYSQL_USER=nextcloud
       - MYSQL_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=nextcloud_redis # <--- Conexión a Redis
       - OVERWRITEHOST=drive.vilcheztech.com
       - OVERWRITEPROTOCOL=https
       - TRUSTED_PROXIES=172.0.0.0/8
@@ -46,14 +53,20 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.entrypoints=web"
+      - "traefik.http.routers.nextcloud.entrypoints=websecure" # Cambiado a websecure para HTTPS
       - "traefik.http.routers.nextcloud.rule=Host(`drive.vilcheztech.com`)"
+      - "traefik.http.routers.nextcloud.tls=true"
       - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+      # --- MIDDLEWARES PARA HSTS Y REDIRECCIONES CALDAV ---
+      - "traefik.http.routers.nextcloud.middlewares=nextcloud-hsts,nextcloud-redir"
+      - "traefik.http.middlewares.nextcloud-hsts.headers.stsSeconds=15552000"
+      - "traefik.http.middlewares.nextcloud-hsts.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.nextcloud-hsts.headers.stsPreload=true"
+      - "traefik.http.middlewares.nextcloud-redir.redirectregex.regex=^https://(.*)/.well-known/(card|cal)dav"
+      - "traefik.http.middlewares.nextcloud-redir.redirectregex.replacement=https://$$1/remote.php/dav/"
 
 volumes:
   nextcloud_html:
-  db_data:
-
 networks:
   proxy:
     external: true
