@@ -145,6 +145,7 @@ services:
     volumes:
       - jellyfin_config:/config
       - /mnt/pve/Disco4TB:/data
+      - /mnt/pve/Disco4TB/immich_app_data/library:/media/fotos_movil:ro # <--- ADICIÓN SUGERIDA
       - /mnt/gopro_21_23:/media/gopro_21_23
       - /mnt/gopro_24_25_dji:/media/gopro_24_25_dji
     group_add:
