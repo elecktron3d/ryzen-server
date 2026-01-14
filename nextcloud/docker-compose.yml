@@ -50,7 +50,6 @@ services:
     volumes:
       - nextcloud_html:/var/www/html
       - /mnt/pve/Disco4TB:/data/disco4tb
-      - /mnt/videos_antiguos:/data/videos_antiguos
       - /mnt/onedrive:/data/onedrive:shared
       - /mnt/gopro_21_23:/data/gopro_21_23
       - /mnt/gopro_24_25_dji:/data/gopro_24_25_dji
@@ -58,8 +57,9 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.entrypoints=web"
+      - "traefik.http.routers.nextcloud.entrypoints=websecure"
       - "traefik.http.routers.nextcloud.rule=Host(`drive.vilcheztech.com`)"
+      - "traefik.http.routers.nextcloud.tls=true"
       - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
       
       # UNIÓN DE MIDDLEWARES (HSTS + REDIR)
